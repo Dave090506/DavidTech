@@ -73,6 +73,21 @@ function Register() {
       }
 
       if (data.user) {
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: data.user.id,
+          full_name: fullName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          address: "",
+          is_admin: false,
+        });
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          toast.error("Account created, but profile setup failed.");
+          return;
+        }
+
         toast.success("Account created successfully!");
         navigate("/login");
       }
