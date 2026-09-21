@@ -1,0 +1,250 @@
+@import "tailwindcss";
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-in {
+  animation: slideInLeft 0.6s ease;
+}
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Customer Dark Mode */
+
+html.customer-dark {
+  color-scheme: dark;
+}
+
+html.customer-dark body {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+html.customer-dark .bg-white {
+  background-color: #1f2937;
+}
+
+html.customer-dark .bg-gray-50 {
+  background-color: #273449;
+}
+
+html.customer-dark .bg-gray-100 {
+  background-color: #111827;
+}
+
+html.customer-dark .bg-gray-200 {
+  background-color: #374151;
+}
+
+html.customer-dark .text-gray-400 {
+  color: #9ca3af;
+}
+
+html.customer-dark .text-gray-500 {
+  color: #d1d5db;
+}
+
+html.customer-dark .text-gray-600 {
+  color: #e5e7eb;
+}
+
+html.customer-dark .text-gray-700 {
+  color: #f3f4f6;
+}
+
+html.customer-dark .text-gray-800,
+html.customer-dark .text-gray-900 {
+  color: #f9fafb;
+}
+
+html.customer-dark .border-gray-100,
+html.customer-dark .border-gray-200,
+html.customer-dark .border-gray-300 {
+  border-color: #4b5563;
+}
+
+html.customer-dark input,
+html.customer-dark select,
+html.customer-dark textarea {
+  background-color: #374151;
+  color: #f9fafb;
+  border-color: #4b5563;
+}
+
+html.customer-dark input::placeholder,
+html.customer-dark textarea::placeholder {
+  color: #9ca3af;
+}
+/* Dark Mode - Navbar text */
+
+html.customer-dark nav a:not(.bg-blue-600):not(.bg-gradient-to-r) {
+  color: #1f2937;
+}
+
+html.customer-dark nav a:hover {
+  color: #2563eb;
+}
+/* Dark Mode - Hero light-background text */
+
+html.customer-dark .hero-section .text-gray-500,
+html.customer-dark .hero-section .text-gray-600,
+html.customer-dark .hero-section .text-gray-700,
+html.customer-dark .hero-section .text-gray-800,
+html.customer-dark .hero-section .text-gray-900 {
+  color: #374151;
+}
+/* Dark Mode - Product card borders */
+
+html.customer-dark .border {
+  border-color: #4b5563;
+}
+
+html.customer-dark .border-gray-100,
+html.customer-dark .border-gray-200,
+html.customer-dark .border-gray-300 {
+  border-color: #4b5563;
+}
+
+/* ========================================
+   DARK MODE - FINAL CONTRAST FIXES
+======================================== */
+
+/* ========================================
+   EXACT DARK MODE COMPONENT FIXES
+======================================== */
+
+/* Navbar wishlist */
+html.customer-dark .dark-nav-wishlist {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+html.customer-dark .dark-nav-wishlist svg {
+  color: #ffffff;
+}
+
+html.customer-dark .dark-nav-wishlist:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+html.customer-dark .dark-nav-wishlist:hover svg {
+  color: #ef4444;
+}
+
+/* Navbar cart */
+html.customer-dark .dark-nav-cart {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+html.customer-dark .dark-nav-cart svg {
+  color: #ffffff;
+}
+
+html.customer-dark .dark-nav-cart:hover {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+html.customer-dark .dark-nav-cart:hover svg {
+  color: #2563eb;
+}
+
+/* Dashboard/Login button */
+html.customer-dark .dark-nav-account {
+  color: #ffffff;
+}
+
+html.customer-dark .dark-nav-account svg,
+html.customer-dark .dark-nav-account span {
+  color: #ffffff;
+}
+
+/* Hero feature cards */
+html.customer-dark .hero-feature-card {
+  background-color: #1f2937;
+  color: #ffffff;
+}
+
+html.customer-dark .hero-feature-card h3 {
+  color: #ffffff;
+}
+
+html.customer-dark .hero-feature-card p {
+  color: #d1d5db;
+}
+
+html.customer-dark .hero-feature-card svg {
+  color: #2563eb;
+}
+
+/* ========================================
+   MOBILE NAVBAR DARK MODE
+======================================== */
+
+/* Hamburger / close button */
+html.customer-dark .mobile-menu-button {
+  color: #ffffff;
+}
+
+html.customer-dark .mobile-menu-button svg {
+  color: #ffffff;
+}
+
+html.customer-dark .mobile-menu-button:hover {
+  background-color: #374151;
+}
+
+/* Mobile dropdown */
+html.customer-dark .mobile-menu-panel {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+/* Mobile navigation links */
+/* Mobile navigation links - exact targeting */
+html.customer-dark .mobile-menu-panel .mobile-nav-link {
+  color: #f9fafb !important;
+}
+
+html.customer-dark .mobile-menu-panel .mobile-nav-link:hover {
+  color: #60a5fa !important;
+}
+
+/* Wishlist hover */
+html.customer-dark .mobile-menu-panel .mobile-wishlist-link:hover {
+  color: #ef4444 !important;
+}
+
+/* Cart hover */
+html.customer-dark .mobile-menu-panel .mobile-cart-link:hover {
+  color: #60a5fa !important;
+}
+/* Keep Dashboard/Login button white */
+html.customer-dark .mobile-menu-links .bg-blue-600 {
+  color: #ffffff;
+}
