@@ -3,7 +3,19 @@ import { FaBoxOpen } from "react-icons/fa";
 
 import useAuth from "../context/useAuth";
 import { supabase } from "../services/supabaseClient";
+import localProducts from "../data/products";
 
+const getOrderItemImage = (item) => {
+  const localProduct = localProducts.find(
+    (product) => String(product.id) === String(item.productId),
+  );
+
+  if (localProduct?.image) {
+    return localProduct.image;
+  }
+
+  return item.image || "";
+};
 function Orders() {
   const { user } = useAuth();
 
@@ -145,7 +157,7 @@ function Orders() {
                   >
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                       <img
-                        src={item.image}
+                        src={getOrderItemImage(item)}
                         alt={item.name}
                         className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-lg bg-gray-100 p-2 shrink-0"
                       />
