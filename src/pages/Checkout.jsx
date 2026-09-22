@@ -13,6 +13,15 @@ function Checkout(props) {
 
   const [shippingFee, setShippingFee] = useState(5000);
 
+  const [paymentMethod, setPaymentMethod] = useState("card");
+
+  const [cardData, setCardData] = useState({
+    cardName: "",
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+  });
+
   const [formData, setFormData] = useState({
     fullName: user?.fullName || "",
     email: user?.email || "",
@@ -57,6 +66,13 @@ function Checkout(props) {
     });
   };
 
+  const handleCardChange = (e) => {
+    setCardData({
+      ...cardData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   const handlePlaceOrder = async () => {
     if (cart.length === 0) {
       toast.error("Your cart is empty.");
@@ -85,6 +101,37 @@ function Checkout(props) {
       return;
     }
 
+    if (paymentMethod === "card") {
+      const cleanCardNumber = cardData.cardNumber.replace(/\s/g, "");
+
+      if (
+        !cardData.cardName.trim() ||
+        !cleanCardNumber ||
+        !cardData.expiry.trim() ||
+        !cardData.cvv.trim()
+      ) {
+        toast.error("Please complete all card payment details.");
+        return;
+      }
+
+      if (!/^\d{16}$/.test(cleanCardNumber)) {
+        toast.error("Please enter a valid 16-digit card number.");
+        return;
+      }
+
+      if (!/^\d{2}\/\d{2}$/.test(cardData.expiry)) {
+        toast.error("Please enter the expiry date as MM/YY.");
+        return;
+      }
+
+      if (!/^\d{3,4}$/.test(cardData.cvv)) {
+        toast.error("Please enter a valid CVV.");
+        return;
+      }
+    }
+
+    const paymentStatus = paymentMethod === "card" ? "paid" : "pending";
+
     try {
       setPlacingOrder(true);
 
@@ -103,6 +150,8 @@ function Checkout(props) {
           tax,
           total,
           status: "pending",
+          payment_method: paymentMethod,
+          payment_status: paymentStatus,
         })
         .select()
         .single();
@@ -214,6 +263,115 @@ function Checkout(props) {
               rows="4"
             />
           </div>
+          <div className="mt-8">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+              Payment Method
+            </h2>
+
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 border rounded-lg p-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="card"
+                  checked={paymentMethod === "card"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span>Debit / Credit Card</span>
+              </label>
+
+              <label className="flex items-center gap-3 border rounded-lg p-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="bank_transfer"
+                  checked={paymentMethod === "bank_transfer"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span>Bank Transfer</span>
+              </label>
+
+              <label className="flex items-center gap-3 border rounded-lg p-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="pay_on_delivery"
+                  checked={paymentMethod === "pay_on_delivery"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span>Pay on Delivery</span>
+              </label>
+            </div>
+
+            {paymentMethod === "card" && (
+              <div className="mt-5 space-y-4 border-t pt-5">
+                <p className="text-sm text-gray-500">
+                  This is a simulated payment for demonstration purposes. No
+                  real card will be charged.
+                </p>
+
+                <input
+                  type="text"
+                  name="cardName"
+                  placeholder="Name on Card"
+                  value={cardData.cardName}
+                  onChange={handleCardChange}
+                  className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                <input
+                  type="text"
+                  name="cardNumber"
+                  placeholder="Card Number"
+                  value={cardData.cardNumber}
+                  onChange={handleCardChange}
+                  maxLength="19"
+                  className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    name="expiry"
+                    placeholder="MM/YY"
+                    value={cardData.expiry}
+                    onChange={handleCardChange}
+                    maxLength="5"
+                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="password"
+                    name="cvv"
+                    placeholder="CVV"
+                    value={cardData.cvv}
+                    onChange={handleCardChange}
+                    maxLength="4"
+                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            )}
+
+            {paymentMethod === "bank_transfer" && (
+              <div className="mt-5 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="font-semibold mb-2">Bank Transfer Instructions</p>
+
+                <p className="text-sm text-gray-700">
+                  Transfer the order total to the account provided by DavidTech.
+                  Your order will remain pending until payment is confirmed.
+                </p>
+              </div>
+            )}
+
+            {paymentMethod === "pay_on_delivery" && (
+              <div className="mt-5 bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700">
+                  You will make payment when your order is delivered.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Order Summary */}
@@ -278,7 +436,11 @@ function Checkout(props) {
                 : "bg-green-600 hover:bg-green-700"
             }`}
           >
-            {placingOrder ? "Placing Order..." : "Place Order"}
+            {placingOrder
+              ? "Processing..."
+              : paymentMethod === "card"
+                ? `Pay ₦${total.toLocaleString()} & Place Order`
+                : "Place Order"}
           </button>
         </div>
       </div>
