@@ -306,6 +306,33 @@ function AdminOrders() {
                 <p className="text-gray-500">Delivery Address</p>
                 <h3>{selectedOrder.address}</h3>
               </div>
+
+              <div>
+                <p className="text-gray-500">Payment Method</p>
+                <h3 className="font-semibold">
+                  {selectedOrder.payment_method === "card"
+                    ? "Debit / Credit Card"
+                    : selectedOrder.payment_method === "bank_transfer"
+                      ? "Bank Transfer"
+                      : selectedOrder.payment_method === "pay_on_delivery"
+                        ? "Pay on Delivery"
+                        : "Not recorded"}
+                </h3>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Payment Status</p>
+
+                <span
+                  className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-semibold ${
+                    selectedOrder.payment_status === "paid"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {selectedOrder.payment_status === "paid" ? "Paid" : "Pending"}
+                </span>
+              </div>
             </div>
             <h3 className="text-2xl font-bold mt-10 mb-5">Ordered Products</h3>
 

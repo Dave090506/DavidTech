@@ -183,6 +183,35 @@ function Orders() {
                 ))}
               </div>
 
+              <div className="mt-5 grid sm:grid-cols-2 gap-3">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-sm text-gray-500">Payment Method</p>
+                  <p className="font-semibold">
+                    {order.payment_method === "card"
+                      ? "Debit / Credit Card"
+                      : order.payment_method === "bank_transfer"
+                        ? "Bank Transfer"
+                        : order.payment_method === "pay_on_delivery"
+                          ? "Pay on Delivery"
+                          : "Not recorded"}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-sm text-gray-500">Payment Status</p>
+
+                  <span
+                    className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${
+                      order.payment_status === "paid"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {order.payment_status === "paid" ? "Paid" : "Pending"}
+                  </span>
+                </div>
+              </div>
+
               <div className="flex justify-between gap-4 mt-5 text-lg sm:text-xl font-bold">
                 <span>Total</span>
                 <span className="text-right wrap-break-word">
