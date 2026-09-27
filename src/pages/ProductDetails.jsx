@@ -11,6 +11,7 @@ import {
 import localProducts from "../data/products";
 import { supabase } from "../services/supabaseClient";
 import getRecommendations from "../utils/recommendations";
+import { checkCompatibility } from "../utils/compatibility";
 import ProductCard from "../components/ProductCard";
 import RecentlyViewed from "../components/RecentlyViewed";
 import useAuth from "../context/useAuth";
@@ -76,6 +77,7 @@ function ProductDetails({ addToCart, wishlist, toggleWishlist }) {
 
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
+  const [compatibilityProductId, setCompatibilityProductId] = useState("");
   let recentlyViewed =
     JSON.parse(localStorage.getItem(recentlyViewedKey)) || [];
 
@@ -97,6 +99,14 @@ function ProductDetails({ addToCart, wishlist, toggleWishlist }) {
   const isWishlisted = wishlist.some((item) => item.id === product?.id);
 
   const recommendedProducts = getRecommendations(product, products);
+  const compatibilityProduct = products.find(
+    (item) => String(item.id) === String(compatibilityProductId),
+  );
+
+  const compatibilityResult =
+    product && compatibilityProduct
+      ? checkCompatibility(product, compatibilityProduct)
+      : null;
   useEffect(() => {
     if (!product) return;
 
@@ -363,6 +373,110 @@ function ProductDetails({ addToCart, wishlist, toggleWishlist }) {
           </div>
         </div>
       </div>
+
+      {/* Product Compatibility Checker */}
+      <div className="mt-12 sm:mt-16">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-5 sm:p-7 lg:p-8">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div>
+              <span className="inline-block bg-blue-100 text-blue-700 text-sm font-semibold px-3 py-1 rounded-full">
+                Smart Compatibility
+              </span>
+
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-3">
+                Product Compatibility Checker
+              </h2>
+
+              <p className="text-gray-600 mt-2 max-w-2xl leading-7">
+                Select another product to check whether it can work with{" "}
+                <span className="font-semibold text-gray-800">
+                  {product.name}
+                </span>
+                .
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <label
+              htmlFor="compatibility-product"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Select a product to check
+            </label>
+
+            <select
+              id="compatibility-product"
+              value={compatibilityProductId}
+              onChange={(e) => setCompatibilityProductId(e.target.value)}
+              className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 bg-white text-gray-800 focus:outline-none focus:border-blue-500 transition"
+            >
+              <option value="">Choose a product...</option>
+
+              {products
+                .filter((item) => String(item.id) !== String(product.id))
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} — {item.category}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {/* Compatibility Result */}
+          {compatibilityResult && (
+            <div
+              className={`mt-6 rounded-xl border p-5 ${
+                compatibilityResult.status === "Compatible"
+                  ? "bg-green-50 border-green-200"
+                  : compatibilityResult.status === "Adapter Required"
+                    ? "bg-yellow-50 border-yellow-200"
+                    : compatibilityResult.status === "Unknown"
+                      ? "bg-gray-50 border-gray-200"
+                      : "bg-red-50 border-red-200"
+              }`}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <span
+                  className={`inline-flex w-fit px-4 py-2 rounded-full text-sm font-bold ${
+                    compatibilityResult.status === "Compatible"
+                      ? "bg-green-600 text-white"
+                      : compatibilityResult.status === "Adapter Required"
+                        ? "bg-yellow-500 text-white"
+                        : compatibilityResult.status === "Unknown"
+                          ? "bg-gray-600 text-white"
+                          : "bg-red-600 text-white"
+                  }`}
+                >
+                  {compatibilityResult.status}
+                </span>
+
+                <p className="font-semibold text-gray-900">
+                  {product.name} + {compatibilityProduct?.name}
+                </p>
+              </div>
+
+              <p className="text-gray-700 mt-4 leading-7">
+                {compatibilityResult.reason}
+              </p>
+            </div>
+          )}
+
+          {!compatibilityResult && (
+            <div className="mt-6 rounded-xl bg-gray-50 border border-gray-200 p-5">
+              <p className="text-gray-600">
+                Choose another product above to see the compatibility result.
+              </p>
+            </div>
+          )}
+
+          <p className="text-xs text-gray-500 mt-4 leading-5">
+            Compatibility results are based on the product information and
+            connection rules available in the DavidTech catalogue.
+          </p>
+        </div>
+      </div>
+
       {/* Recommendations */}
 
       <div className="mt-12 sm:mt-16 lg:mt-20">
