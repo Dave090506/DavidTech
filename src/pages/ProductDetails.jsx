@@ -381,6 +381,8 @@ function ProductDetails({ addToCart, wishlist, toggleWishlist }) {
               rating={item.rating}
               badge={item.badge}
               reason={item.reason}
+              reasons={item.reasons}
+              matchPercentage={item.matchPercentage}
               brand={item.brand}
               addToCart={addToCart}
               wishlist={wishlist}

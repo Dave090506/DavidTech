@@ -10,13 +10,15 @@ function ProductCard({
   product,
   addToCart,
   reason,
+  reasons,
+  matchPercentage,
   brand,
   wishlist,
   toggleWishlist,
 }) {
   const isWishlisted = wishlist?.some((item) => item.id === product.id);
   return (
-    <div className="group bg-white rounded-2xl sm:rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden sm:hover:-translate-y-2">
+    <div className="group bg-white rounded-2xl sm:rounded-3xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden sm:hover:-translate-y-2 h-full flex flex-col">
       {/* Badge & Wishlist */}
       <div className="flex justify-between items-center px-4 sm:px-5 pt-4 sm:pt-5 gap-3">
         {badge && (
@@ -62,7 +64,7 @@ function ProductCard({
       </Link>
 
       {/* Product Info */}
-      <div className="px-4 sm:px-6 pb-5 sm:pb-6">
+      <div className="px-4 sm:px-6 pb-5 sm:pb-6 flex flex-col flex-1">
         <div className="flex items-center gap-1 text-yellow-500">
           {[...Array(5)].map((_, index) => (
             <FaStar
@@ -84,18 +86,66 @@ function ProductCard({
         </p>
 
         <p className="text-green-600 font-medium mt-2">✓ In Stock</p>
-        {reason && (
-          <p className="mt-2 text-sm text-blue-600 font-medium">💡 {reason}</p>
+        {/* Explainable Recommendation */}
+        {matchPercentage !== undefined && (
+          <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-gray-700">
+                Product Match
+              </span>
+
+              <span className="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                {matchPercentage}% Match
+              </span>
+            </div>
+
+            {/* Match Progress Bar */}
+            <div className="w-full bg-blue-100 rounded-full h-2 mt-3 overflow-hidden">
+              <div
+                className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                style={{ width: `${matchPercentage}%` }}
+              />
+            </div>
+
+            {/* Recommendation Reasons */}
+            {Array.isArray(reasons) && reasons.length > 0 ? (
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-gray-800 mb-2">
+                  Why recommended?
+                </p>
+
+                <ul className="space-y-1.5">
+                  {reasons.slice(0, 3).map((item, index) => (
+                    <li
+                      key={`${item}-${index}`}
+                      className="text-sm text-gray-600 flex items-start gap-2"
+                    >
+                      <span className="text-green-600 font-bold">✓</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              reason && (
+                <p className="mt-3 text-sm text-blue-600 font-medium">
+                  {reason}
+                </p>
+              )
+            )}
+          </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => addToCart(product)}
-          className="mt-5 sm:mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 active:scale-95 flex items-center justify-center gap-2"
-        >
-          <FaShoppingCart />
-          Add to Cart
-        </button>
+        <div className="mt-auto pt-5 sm:pt-6">
+          <button
+            type="button"
+            onClick={() => addToCart(product)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 active:scale-95 flex items-center justify-center gap-2"
+          >
+            <FaShoppingCart />
+            Add to Cart
+          </button>
+        </div>
       </div>
     </div>
   );
