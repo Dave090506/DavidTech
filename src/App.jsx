@@ -155,6 +155,12 @@ function App() {
   };
 
   const removeItem = (id) => {
+    const productToRemove = cart.find((item) => item.id === id);
+
+    if (productToRemove) {
+      toast.info(`${productToRemove.name} removed from cart`);
+    }
+
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
   const toggleWishlist = (product) => {

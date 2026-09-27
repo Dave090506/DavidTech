@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { FaLaptop, FaDesktop, FaMagic } from "react-icons/fa";
+import {
+  FaLaptop,
+  FaDesktop,
+  FaMagic,
+  FaWallet,
+  FaShieldAlt,
+  FaCogs,
+  FaShoppingCart,
+} from "react-icons/fa";
 
 import { supabase } from "../services/supabaseClient";
 import generateSetup from "../utils/setupGenerator";
@@ -137,8 +145,9 @@ function BuildSetup({ addToCart }) {
     <section className="min-h-screen bg-gray-50 py-10 sm:py-14">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Heading */}
-        <div className="text-center max-w-3xl mx-auto">
-          <span className="inline-block bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-2 rounded-full">
+        <div className="text-center max-w-4xl mx-auto">
+          <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-2 rounded-full">
+            <FaMagic />
             Smart Setup Builder
           </span>
 
@@ -146,21 +155,56 @@ function BuildSetup({ addToCart }) {
             Build My Setup
           </h1>
 
-          <p className="text-gray-600 mt-4 text-base sm:text-lg leading-8">
-            Tell DavidTech what you need and your budget. The rule-based setup
-            builder will select suitable products from the current catalogue.
+          <p className="text-gray-600 mt-4 text-base sm:text-lg leading-7 sm:leading-8 max-w-3xl mx-auto">
+            Tell DavidTech what you need and your budget. Our rule-based setup
+            builder selects suitable products from the current catalogue and
+            checks how well the selected components work together.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
+            <span className="inline-flex items-center gap-2 bg-white border border-blue-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+              <FaWallet className="text-blue-600" />
+              Budget-aware
+            </span>
+
+            <span className="inline-flex items-center gap-2 bg-white border border-green-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+              <FaShieldAlt className="text-green-600" />
+              Compatibility checked
+            </span>
+
+            <span className="inline-flex items-center gap-2 bg-white border border-indigo-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+              <FaCogs className="text-indigo-600" />
+              Rule-based selection
+            </span>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mt-10">
           {/* Setup Form */}
           <form
             onSubmit={handleGenerateSetup}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 sm:p-7"
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 sm:p-7 lg:p-8"
           >
-            <h2 className="text-2xl font-bold text-gray-900">
-              Your Requirements
-            </h2>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
+                  Step 1
+                </p>
+
+                <h2 className="text-2xl font-bold text-gray-900 mt-1">
+                  Your Requirements
+                </h2>
+
+                <p className="text-sm text-gray-500 mt-2">
+                  Choose what you need and we'll build a suitable setup around
+                  your budget.
+                </p>
+              </div>
+
+              <div className="hidden sm:flex w-11 h-11 rounded-xl bg-blue-50 text-blue-600 items-center justify-center shrink-0">
+                <FaLaptop className="text-xl" />
+              </div>
+            </div>
 
             {/* Purpose */}
             <div className="mt-7">
@@ -203,6 +247,22 @@ function BuildSetup({ addToCart }) {
                 placeholder="Example: 2000000"
                 className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500"
               />
+
+              {budget && Number(budget) > 0 && (
+                <div className="flex items-center justify-between gap-3 mt-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <FaWallet className="text-blue-600" />
+
+                    <span className="text-sm text-gray-600">
+                      Your maximum budget
+                    </span>
+                  </div>
+
+                  <span className="font-bold text-blue-700">
+                    ₦{Number(budget).toLocaleString()}
+                  </span>
+                </div>
+              )}
 
               <p className="text-sm text-gray-500 mt-2">
                 Enter the maximum amount you want to spend on the complete
@@ -254,6 +314,12 @@ function BuildSetup({ addToCart }) {
               <p className="text-sm text-gray-500 mt-1">
                 Your selected laptop or desktop is included automatically.
               </p>
+
+              <div className="mt-3 inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-semibold">
+                <FaCogs />
+                {selectedCategories.length + 1} component
+                {selectedCategories.length + 1 !== 1 ? "s" : ""} selected
+              </div>
 
               <div className="grid sm:grid-cols-2 gap-3 mt-4">
                 {optionalComponents.map((category) => {
@@ -311,6 +377,19 @@ function BuildSetup({ addToCart }) {
                   Performance — Prioritize stronger products
                 </option>
               </select>
+
+              <div className="mt-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <p className="text-sm text-gray-600 leading-6">
+                  {priority === "Budget" &&
+                    "Focuses more strongly on lower-cost products while still matching your selected purpose."}
+
+                  {priority === "Balanced" &&
+                    "Balances product suitability, performance and price for an all-round setup."}
+
+                  {priority === "Performance" &&
+                    "Gives greater priority to stronger-performing products while staying within your budget."}
+                </p>
+              </div>
             </div>
 
             {formError && (
@@ -332,30 +411,88 @@ function BuildSetup({ addToCart }) {
 
           {/* Results Area */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 sm:p-7">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Your Suggested Setup
-            </h2>
+            <div>
+              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">
+                Step 2
+              </p>
+
+              <h2 className="text-2xl font-bold text-gray-900 mt-1">
+                Your Suggested Setup
+              </h2>
+
+              <p className="text-sm text-gray-500 mt-2">
+                Review the selected products, budget usage and compatibility.
+              </p>
+            </div>
 
             {!setupResult ? (
-              <div className="min-h-80 flex items-center justify-center text-center">
-                <div>
-                  <div className="text-5xl mb-4">🖥️</div>
+              <div className="min-h-96 flex items-center justify-center text-center">
+                <div className="max-w-md w-full">
+                  <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <FaDesktop className="text-3xl" />
+                  </div>
 
-                  <h3 className="text-xl font-bold text-gray-800">
+                  <h3 className="text-xl font-bold text-gray-900 mt-5">
                     Ready to build your setup?
                   </h3>
 
-                  <p className="text-gray-500 mt-2 max-w-sm">
-                    Enter your requirements and select Generate My Setup to see
-                    suitable products.
+                  <p className="text-gray-500 mt-2 leading-6">
+                    Complete your requirements and let DavidTech create a
+                    suitable combination from the current catalogue.
                   </p>
+
+                  <div className="grid grid-cols-3 gap-3 mt-7">
+                    <div className="border border-gray-200 bg-gray-50 rounded-xl p-3">
+                      <div className="w-7 h-7 mx-auto rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                        1
+                      </div>
+
+                      <p className="text-xs font-semibold text-gray-700 mt-2">
+                        Set Needs
+                      </p>
+                    </div>
+
+                    <div className="border border-gray-200 bg-gray-50 rounded-xl p-3">
+                      <div className="w-7 h-7 mx-auto rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                        2
+                      </div>
+
+                      <p className="text-xs font-semibold text-gray-700 mt-2">
+                        Generate
+                      </p>
+                    </div>
+
+                    <div className="border border-gray-200 bg-gray-50 rounded-xl p-3">
+                      <div className="w-7 h-7 mx-auto rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
+                        3
+                      </div>
+
+                      <p className="text-xs font-semibold text-gray-700 mt-2">
+                        Review
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="mt-6">
-                <div className="bg-green-50 border border-green-200 rounded-xl p-5">
-                  <p className="text-green-700 font-bold">
-                    Setup Generated Successfully
+                <div
+                  className={`rounded-xl p-5 border ${
+                    setupResult.missingCategories.length === 0
+                      ? "bg-green-50 border-green-200"
+                      : "bg-yellow-50 border-yellow-200"
+                  }`}
+                >
+                  <p
+                    className={`font-bold ${
+                      setupResult.missingCategories.length === 0
+                        ? "text-green-700"
+                        : "text-yellow-800"
+                    }`}
+                  >
+                    {setupResult.missingCategories.length === 0
+                      ? "Setup Generated Successfully"
+                      : "Partial Setup Generated"}
                   </p>
 
                   <p className="text-gray-600 mt-2">
@@ -369,14 +506,14 @@ function BuildSetup({ addToCart }) {
                   {setupResult.selectedProducts.map((item) => (
                     <div
                       key={item.id}
-                      className="border border-gray-200 rounded-xl p-4 flex gap-4"
+                      className="group border border-gray-200 rounded-2xl p-4 sm:p-5 flex gap-4 bg-white hover:border-blue-200 hover:shadow-md transition-all duration-200"
                     >
-                      <div className="w-20 h-20 shrink-0 bg-gray-50 rounded-lg flex items-center justify-center">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center p-2">
                         {item.image ? (
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="max-w-full max-h-full object-contain"
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
                           />
                         ) : (
                           <span className="text-xs text-gray-400">
@@ -386,15 +523,15 @@ function BuildSetup({ addToCart }) {
                       </div>
 
                       <div className="min-w-0">
-                        <p className="text-xs font-semibold text-blue-600">
+                        <span className="inline-flex bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                           {item.category}
-                        </p>
+                        </span>
 
-                        <h3 className="font-bold text-gray-900 mt-1">
+                        <h3 className="font-bold text-gray-900 mt-2 leading-snug">
                           {item.name}
                         </h3>
 
-                        <p className="font-bold text-blue-600 mt-1">
+                        <p className="font-bold text-blue-600 text-lg mt-1">
                           {item.price}
                         </p>
                         {Array.isArray(item.setupReasons) &&
@@ -426,51 +563,114 @@ function BuildSetup({ addToCart }) {
                   ))}
                 </div>
 
-                <div className="border-t mt-6 pt-5 space-y-2">
-                  <div className="flex justify-between gap-4">
-                    <span className="text-gray-600">Budget</span>
+                <div className="mt-6 bg-gray-50 border border-gray-200 rounded-2xl p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-500">
+                        Budget Usage
+                      </p>
 
-                    <span className="font-semibold">
-                      ₦{setupResult.budget.toLocaleString()}
-                    </span>
+                      <h3 className="text-lg font-bold text-gray-900 mt-1">
+                        Setup Cost Summary
+                      </h3>
+                    </div>
+
+                    <div className="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                      <FaWallet className="text-xl" />
+                    </div>
                   </div>
 
-                  <div className="flex justify-between gap-4">
-                    <span className="text-gray-600">Setup Total</span>
+                  <div className="mt-5 space-y-3">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-600">Total Budget</span>
 
-                    <span className="font-bold text-gray-900">
-                      ₦{setupResult.total.toLocaleString()}
-                    </span>
+                      <span className="font-semibold text-gray-900">
+                        ₦{setupResult.budget.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-600">Setup Total</span>
+
+                      <span className="font-bold text-blue-600">
+                        ₦{setupResult.total.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-600">Remaining Budget</span>
+
+                      <span
+                        className={`font-bold ${
+                          setupResult.remainingBudget >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        ₦{setupResult.remainingBudget.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex justify-between gap-4">
-                    <span className="text-gray-600">Remaining Budget</span>
+                  <div className="border-t border-gray-200 mt-5 pt-4">
+                    <div className="flex items-center justify-between gap-4 mb-2">
+                      <span className="text-sm font-medium text-gray-600">
+                        Budget used
+                      </span>
 
-                    <span
-                      className={`font-bold ${
-                        setupResult.remainingBudget >= 0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      ₦{setupResult.remainingBudget.toLocaleString()}
-                    </span>
+                      <span className="text-sm font-bold text-blue-600">
+                        {Math.min(
+                          100,
+                          Math.round(
+                            (setupResult.total / setupResult.budget) * 100,
+                          ),
+                        )}
+                        %
+                      </span>
+                    </div>
+
+                    <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.round(
+                              (setupResult.total / setupResult.budget) * 100,
+                            ),
+                          )}%`,
+                        }}
+                      />
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-2">
+                      ₦{setupResult.total.toLocaleString()} of ₦
+                      {setupResult.budget.toLocaleString()} used
+                    </p>
                   </div>
                 </div>
 
                 {/* Setup Compatibility */}
                 {setupResult.compatibilityResults.length > 0 && (
                   <div className="mt-6">
-                    <h3 className="text-lg font-bold text-gray-900">
-                      Setup Compatibility
-                    </h3>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+                        <FaShieldAlt className="text-lg" />
+                      </div>
 
-                    <p className="text-sm text-gray-500 mt-1">
-                      Compatibility is checked against the selected main
-                      computer.
-                    </p>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">
+                          Setup Compatibility
+                        </h3>
 
-                    <div className="space-y-3 mt-4">
+                        <p className="text-sm text-gray-500 mt-1">
+                          Compatibility is checked against the selected main
+                          computer.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 mt-5">
                       {setupResult.compatibilityResults.map((item) => (
                         <div
                           key={item.productId}
@@ -484,13 +684,13 @@ function BuildSetup({ addToCart }) {
                                   : "bg-red-50 border-red-200"
                           }`}
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="font-semibold text-gray-900">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="font-semibold text-gray-900 min-w-0">
                               {item.productName}
                             </p>
 
                             <span
-                              className={`text-xs font-bold px-3 py-1 rounded-full ${
+                              className={`shrink-0 text-xs font-bold px-3 py-1 rounded-full ${
                                 item.result.status === "Compatible"
                                   ? "bg-green-600 text-white"
                                   : item.result.status === "Adapter Required"
@@ -520,7 +720,8 @@ function BuildSetup({ addToCart }) {
                     </p>
 
                     <p className="text-sm text-yellow-700 mt-1">
-                      No suitable product fitted the allocated budget for:{" "}
+                      No suitable product could be included within the remaining
+                      budget and compatibility requirements for:{" "}
                       {setupResult.missingCategories.join(", ")}.
                     </p>
                   </div>
@@ -566,12 +767,18 @@ function BuildSetup({ addToCart }) {
                         : "bg-green-600 hover:bg-green-700 text-white active:scale-[0.99]"
                     }`}
                   >
-                    🛒 Add Complete Setup to Cart
+                    <FaShoppingCart className="text-lg" />
+
+                    {setupResult.missingCategories.length === 0
+                      ? "Add Complete Setup to Cart"
+                      : "Add Available Setup to Cart"}
                   </button>
 
                   {!setupResult.hasCompatibilityProblem && (
                     <p className="text-xs text-gray-500 text-center mt-2">
-                      All selected products will be added to your cart.
+                      {setupResult.missingCategories.length === 0
+                        ? "All selected products will be added to your cart."
+                        : "The available products shown above will be added to your cart."}
                     </p>
                   )}
                 </div>

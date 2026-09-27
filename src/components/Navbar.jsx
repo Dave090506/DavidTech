@@ -78,6 +78,21 @@ function Navbar({ cart, wishlist }) {
 
             <li>
               <NavLink
+                to="/build-setup"
+                className={({ isActive }) =>
+                  `transition-colors duration-300 ${
+                    isActive
+                      ? "text-blue-600 font-semibold border-b-2 border-blue-600 pb-1"
+                      : "text-gray-700 hover:text-blue-600"
+                  }`
+                }
+              >
+                Build My Setup
+              </NavLink>
+            </li>
+
+            <li>
+              <NavLink
                 to="/about"
                 className={({ isActive }) =>
                   `transition-colors duration-300 ${
@@ -182,6 +197,14 @@ function Navbar({ cart, wishlist }) {
                 className="mobile-nav-link text-lg font-medium hover:text-blue-600"
               >
                 Products
+              </NavLink>
+
+              <NavLink
+                to="/build-setup"
+                onClick={() => setMenuOpen(false)}
+                className="mobile-nav-link text-lg font-medium hover:text-blue-600"
+              >
+                Build My Setup
               </NavLink>
 
               <NavLink

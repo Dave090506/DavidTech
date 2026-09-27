@@ -39,6 +39,12 @@ const priorityWeights = {
     price: 1,
   },
 };
+const compatibilityScores = {
+  Compatible: 3,
+  "Adapter Required": 2,
+  Unknown: 1,
+  "Not Compatible": 0,
+};
 
 const scoreProduct = (product, purpose, priority, categoryBudget) => {
   const weights = priorityWeights[priority] || priorityWeights.Balanced;
@@ -167,6 +173,56 @@ const selectBestProduct = (
   return candidates[0] || null;
 };
 
+const selectBestCompatibleProduct = (
+  products,
+  category,
+  purpose,
+  priority,
+  categoryBudget,
+  mainComputer,
+) => {
+  const candidates = products
+    .filter((product) => product.category === category)
+    .map((product) => {
+      const scoredProduct = scoreProduct(
+        product,
+        purpose,
+        priority,
+        categoryBudget,
+      );
+
+      const compatibility = checkCompatibility(mainComputer, product);
+
+      return {
+        ...scoredProduct,
+        compatibility,
+        compatibilityScore: compatibilityScores[compatibility.status] ?? 0,
+      };
+    })
+    .filter(
+      (product) =>
+        product.numericPrice > 0 &&
+        product.numericPrice <= categoryBudget &&
+        product.compatibility.status !== "Not Compatible",
+    )
+    .sort((a, b) => {
+      // First prefer the stronger compatibility result.
+      if (b.compatibilityScore !== a.compatibilityScore) {
+        return b.compatibilityScore - a.compatibilityScore;
+      }
+
+      // Then use the normal setup recommendation score.
+      if (b.setupScore !== a.setupScore) {
+        return b.setupScore - a.setupScore;
+      }
+
+      // If both are equal, prefer the cheaper product.
+      return a.numericPrice - b.numericPrice;
+    });
+
+  return candidates[0] || null;
+};
+
 const validateSetupCompatibility = (selectedProducts) => {
   if (selectedProducts.length < 2) return [];
 
@@ -243,28 +299,117 @@ export const generateSetup = ({
   );
 
   const selectedProducts = [];
-  const missingCategories = [];
+  let missingCategories = [];
 
-  uniqueCategories.forEach((category) => {
-    const categoryBudget = numericBudget * (budgetAllocations[category] || 0);
+  // -------------------------------------------
+  // PASS 1: Select products using category budgets
+  // -------------------------------------------
 
-    const selectedProduct = selectBestProduct(
-      products,
-      category,
-      purpose,
-      priority,
-      categoryBudget,
+  // Select the main computer first.
+  const mainComputerBudget =
+    numericBudget * (budgetAllocations[mainComputerType] || 0);
+
+  const mainComputer = selectBestProduct(
+    products,
+    mainComputerType,
+    purpose,
+    priority,
+    mainComputerBudget,
+  );
+
+  if (mainComputer) {
+    selectedProducts.push({
+      ...mainComputer,
+      allocatedBudget: Math.round(mainComputerBudget),
+    });
+  } else {
+    missingCategories.push(mainComputerType);
+  }
+
+  // Select the other requested components using
+  // both their allocated budget and compatibility.
+  uniqueCategories
+    .filter((category) => category !== mainComputerType)
+    .forEach((category) => {
+      const categoryBudget = numericBudget * (budgetAllocations[category] || 0);
+
+      let selectedProduct = null;
+
+      if (mainComputer) {
+        selectedProduct = selectBestCompatibleProduct(
+          products,
+          category,
+          purpose,
+          priority,
+          categoryBudget,
+          mainComputer,
+        );
+      }
+
+      if (selectedProduct) {
+        selectedProducts.push({
+          ...selectedProduct,
+          allocatedBudget: Math.round(categoryBudget),
+        });
+      } else {
+        missingCategories.push(category);
+      }
+    });
+
+  // -------------------------------------------
+  // PASS 2: Redistribute unused overall budget
+  // -------------------------------------------
+
+  if (mainComputer && missingCategories.length > 0) {
+    let currentTotal = selectedProducts.reduce(
+      (sum, product) => sum + product.numericPrice,
+      0,
     );
 
-    if (selectedProduct) {
-      selectedProducts.push({
-        ...selectedProduct,
-        allocatedBudget: Math.round(categoryBudget),
-      });
-    } else {
-      missingCategories.push(category);
-    }
-  });
+    const stillMissing = [];
+
+    missingCategories.forEach((category) => {
+      // The main computer should not be replaced during
+      // the redistribution pass.
+      if (category === mainComputerType) {
+        stillMissing.push(category);
+        return;
+      }
+
+      const remainingBudget = numericBudget - currentTotal;
+
+      if (remainingBudget <= 0) {
+        stillMissing.push(category);
+        return;
+      }
+
+      const selectedProduct = selectBestCompatibleProduct(
+        products,
+        category,
+        purpose,
+        priority,
+        remainingBudget,
+        mainComputer,
+      );
+
+      if (selectedProduct) {
+        selectedProducts.push({
+          ...selectedProduct,
+
+          // During redistribution, the remaining overall
+          // budget becomes the maximum available amount.
+          allocatedBudget: Math.round(remainingBudget),
+          usedRedistributedBudget: true,
+        });
+
+        currentTotal += selectedProduct.numericPrice;
+      } else {
+        stillMissing.push(category);
+      }
+    });
+
+    missingCategories = stillMissing;
+  }
 
   const total = selectedProducts.reduce(
     (sum, product) => sum + product.numericPrice,
