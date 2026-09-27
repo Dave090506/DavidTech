@@ -63,6 +63,14 @@ function AdminProducts() {
     image: "",
     rating: 5,
     badge: "",
+
+    // Smart product attributes
+    purposes: [],
+    performance_level: "",
+    connections: [],
+    ram: "",
+    storage: "",
+    display_quality: "",
   });
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -129,11 +137,24 @@ function AdminProducts() {
       name: editingProduct.name,
       category: editingProduct.category,
       brand: editingProduct.brand,
-      type: editingProduct.type || editingProduct.category,
+      type: editingProduct.type?.trim() || editingProduct.category,
       price: editingProduct.price,
       image: imageUrl,
       rating: Number(editingProduct.rating || 5),
-      badge: editingProduct.badge || null,
+      badge: editingProduct.badge?.trim() || null,
+
+      // Smart product attributes
+      purposes: Array.isArray(editingProduct.purposes)
+        ? editingProduct.purposes
+        : [],
+      performance_level: editingProduct.performance_level || null,
+      connections: Array.isArray(editingProduct.connections)
+        ? editingProduct.connections
+        : [],
+      ram: editingProduct.ram?.trim() || null,
+      storage: editingProduct.storage?.trim() || null,
+      display_quality: editingProduct.display_quality || null,
+
       updated_at: new Date().toISOString(),
     };
 
@@ -189,6 +210,20 @@ function AdminProducts() {
       ...currentProduct,
       image: previewUrl,
     }));
+  };
+  const textToArray = (value) => {
+    if (!value) return [];
+
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
+  const arrayToText = (value) => {
+    if (!Array.isArray(value)) return "";
+
+    return value.join(", ");
   };
   const handleAddProduct = async () => {
     if (
@@ -248,6 +283,13 @@ function AdminProducts() {
       image: imageUrl,
       rating: Number(newProduct.rating || 5),
       badge: newProduct.badge.trim() || null,
+
+      purposes: newProduct.purposes,
+      connections: newProduct.connections,
+      performance_level: newProduct.performance_level || null,
+      ram: newProduct.ram || null,
+      storage: newProduct.storage || null,
+      display_quality: newProduct.display_quality || null,
     };
 
     const { data, error } = await adminSupabase
@@ -273,6 +315,12 @@ function AdminProducts() {
       image: "",
       rating: 5,
       badge: "",
+      purposes: [],
+      performance_level: "",
+      connections: [],
+      ram: "",
+      storage: "",
+      display_quality: "",
     });
 
     setNewProductImageFile(null);
@@ -525,6 +573,129 @@ function AdminProducts() {
                 />
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold mb-2">
+                  Suitable Purposes
+                </label>
+
+                <input
+                  type="text"
+                  value={arrayToText(editingProduct.purposes)}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      purposes: textToArray(e.target.value),
+                    })
+                  }
+                  placeholder="e.g. Programming, Gaming, School, Office Work"
+                  className="w-full border rounded-xl p-3"
+                />
+
+                <p className="text-xs text-gray-500 mt-1">
+                  Separate multiple purposes with commas.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Performance Level
+                </label>
+
+                <select
+                  value={editingProduct.performance_level || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      performance_level: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded-xl p-3"
+                >
+                  <option value="">Select Performance Level</option>
+                  <option value="Budget">Budget</option>
+                  <option value="Standard">Standard</option>
+                  <option value="High">High</option>
+                  <option value="Premium">Premium</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Connections
+                </label>
+
+                <input
+                  type="text"
+                  value={arrayToText(editingProduct.connections)}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      connections: textToArray(e.target.value),
+                    })
+                  }
+                  placeholder="e.g. USB-C, HDMI, Bluetooth"
+                  className="w-full border rounded-xl p-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">RAM</label>
+
+                <input
+                  type="text"
+                  value={editingProduct.ram || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      ram: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. 16GB"
+                  className="w-full border rounded-xl p-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Storage
+                </label>
+
+                <input
+                  type="text"
+                  value={editingProduct.storage || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      storage: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. 512GB SSD"
+                  className="w-full border rounded-xl p-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Display Quality
+                </label>
+
+                <select
+                  value={editingProduct.display_quality || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      display_quality: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded-xl p-3"
+                >
+                  <option value="">Not Applicable / Select Quality</option>
+                  <option value="Basic">Basic</option>
+                  <option value="Standard">Standard</option>
+                  <option value="High">High</option>
+                  <option value="Premium">Premium</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-semibold mb-2">
                   Rating
@@ -743,6 +914,129 @@ function AdminProducts() {
                 />
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold mb-2">
+                  Suitable Purposes
+                </label>
+
+                <input
+                  type="text"
+                  value={arrayToText(newProduct.purposes)}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      purposes: textToArray(e.target.value),
+                    })
+                  }
+                  placeholder="e.g. Programming, Gaming, School, Office Work"
+                  className="w-full border rounded-xl p-3"
+                />
+
+                <p className="text-xs text-gray-500 mt-1">
+                  Separate multiple purposes with commas.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Performance Level
+                </label>
+
+                <select
+                  value={newProduct.performance_level}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      performance_level: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded-xl p-3"
+                >
+                  <option value="">Select Performance Level</option>
+                  <option value="Budget">Budget</option>
+                  <option value="Standard">Standard</option>
+                  <option value="High">High</option>
+                  <option value="Premium">Premium</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Connections
+                </label>
+
+                <input
+                  type="text"
+                  value={arrayToText(newProduct.connections)}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      connections: textToArray(e.target.value),
+                    })
+                  }
+                  placeholder="e.g. USB-C, HDMI, Bluetooth"
+                  className="w-full border rounded-xl p-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">RAM</label>
+
+                <input
+                  type="text"
+                  value={newProduct.ram}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      ram: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. 16GB"
+                  className="w-full border rounded-xl p-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Storage
+                </label>
+
+                <input
+                  type="text"
+                  value={newProduct.storage}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      storage: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. 512GB SSD"
+                  className="w-full border rounded-xl p-3"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Display Quality
+                </label>
+
+                <select
+                  value={newProduct.display_quality}
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      display_quality: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded-xl p-3"
+                >
+                  <option value="">Not Applicable / Select Quality</option>
+                  <option value="Basic">Basic</option>
+                  <option value="Standard">Standard</option>
+                  <option value="High">High</option>
+                  <option value="Premium">Premium</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-semibold mb-2">
                   Rating
