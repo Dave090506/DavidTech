@@ -30,6 +30,7 @@ import AdminRoute from "./components/AdminRoute";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminSettings from "./pages/AdminSettings";
+import BuildSetup from "./pages/BuildSetup";
 import { toast } from "react-toastify";
 
 function App() {
@@ -113,22 +114,25 @@ function App() {
     localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
   }, [wishlist, wishlistKey]);
 
-  const addToCart = (product, quantity = 1) => {
-    toast.success(`${product.name} added to cart!`);
+  const addToCart = (product, quantity = 1, showNotification = true) => {
+    if (showNotification) {
+      toast.success(`${product.name} added to cart!`);
+    }
+
     setCart((prevCart) => {
-      // Check if product already exists
       const existingProduct = prevCart.find((item) => item.id === product.id);
 
       if (existingProduct) {
-        // Increase quantity
         return prevCart.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? {
+                ...item,
+                quantity: item.quantity + quantity,
+              }
             : item,
         );
       }
 
-      // Add new product with quantity 1
       return [...prevCart, { ...product, quantity }];
     });
   };
@@ -254,6 +258,10 @@ function App() {
                 addToCart={addToCart}
               />
             }
+          />
+          <Route
+            path="/build-setup"
+            element={<BuildSetup addToCart={addToCart} />}
           />
         </Route>
 
