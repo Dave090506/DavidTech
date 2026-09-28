@@ -1,29 +1,10 @@
 import { useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
-function SearchBar({ search, setSearch }) {
+
+import { parseVoiceSearch } from "../utils/voiceSearchParser";
+function SearchBar({ search, setSearch, onVoiceCommand, onManualSearch }) {
   const [isListening, setIsListening] = useState(false);
-  const cleanVoiceSearch = (transcript) => {
-    const commandWords = [
-      "show me",
-      "search for",
-      "find me",
-      "find",
-      "search",
-      "show",
-      "look for",
-      "i need",
-    ];
 
-    let cleanedText = transcript.toLowerCase().trim();
-
-    commandWords.forEach((command) => {
-      if (cleanedText.startsWith(command)) {
-        cleanedText = cleanedText.replace(command, "").trim();
-      }
-    });
-
-    return cleanedText;
-  };
   const startListening = () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -46,9 +27,13 @@ function SearchBar({ search, setSearch }) {
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
 
-      const cleanedSearch = cleanVoiceSearch(transcript);
+      const parsedCommand = parseVoiceSearch(transcript);
 
-      setSearch(cleanedSearch);
+      setSearch(parsedCommand.searchText);
+
+      if (onVoiceCommand) {
+        onVoiceCommand(parsedCommand);
+      }
     };
     recognition.onend = () => {
       setIsListening(false);
@@ -75,7 +60,13 @@ function SearchBar({ search, setSearch }) {
             type="text"
             placeholder="Search for laptops, monitors..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+
+              if (onManualSearch) {
+                onManualSearch();
+              }
+            }}
             className="flex-1 min-w-0 px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-lg outline-none"
           />
 

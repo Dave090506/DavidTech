@@ -1,13 +1,64 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import SearchBar from "../components/SearchBar";
 import Categories from "../components/Categories";
 import FeaturedProducts from "../components/FeaturedProducts";
 
 function Products({ addToCart, wishlist, toggleWishlist }) {
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchParams] = useSearchParams();
+
+  // Get voice-search values passed from the Home page
+  const searchFromUrl = searchParams.get("search") || "";
+  const categoryFromUrl = searchParams.get("category") || "All";
+  const maxPriceFromUrl = searchParams.get("maxPrice");
+
+  const initialMaxPrice =
+    maxPriceFromUrl && Number.isFinite(Number(maxPriceFromUrl))
+      ? Number(maxPriceFromUrl)
+      : null;
+
+  // Product page states
+  const [search, setSearch] = useState(searchFromUrl);
+  const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl);
   const [sortOption, setSortOption] = useState("default");
+  const [voiceMaxPrice, setVoiceMaxPrice] = useState(initialMaxPrice);
+
+  // If the user arrived from a Home voice search,
+  // automatically move to the product results
+  useEffect(() => {
+    if (window.location.hash === "#all-products") {
+      const scrollTimer = setTimeout(() => {
+        document.getElementById("all-products")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 150);
+
+      return () => clearTimeout(scrollTimer);
+    }
+  }, []);
+
+  // Manual typing removes an old voice-price restriction
+  const handleManualSearch = () => {
+    setVoiceMaxPrice(null);
+  };
+
+  // Handle voice commands used directly on the Products page
+  const handleVoiceCommand = (command) => {
+    if (command.category) {
+      setSelectedCategory(command.category);
+    }
+
+    setVoiceMaxPrice(command.maxPrice);
+
+    setTimeout(() => {
+      document.getElementById("all-products")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 150);
+  };
 
   return (
     <section className="py-8 sm:py-10">
@@ -25,12 +76,18 @@ function Products({ addToCart, wishlist, toggleWishlist }) {
         </p>
       </div>
 
-      <SearchBar search={search} setSearch={setSearch} />
+      <SearchBar
+        search={search}
+        setSearch={setSearch}
+        onVoiceCommand={handleVoiceCommand}
+        onManualSearch={handleManualSearch}
+      />
 
       <Categories
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-6 sm:mt-10 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
@@ -66,6 +123,7 @@ function Products({ addToCart, wishlist, toggleWishlist }) {
         search={search}
         selectedCategory={selectedCategory}
         sortOption={sortOption}
+        maxPrice={voiceMaxPrice}
         addToCart={addToCart}
         wishlist={wishlist}
         toggleWishlist={toggleWishlist}

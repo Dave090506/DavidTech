@@ -10,6 +10,7 @@ function FeaturedProducts({
   search = "",
   selectedCategory = "All",
   sortOption = "default",
+  maxPrice = null,
   limit,
   addToCart,
   wishlist = [],
@@ -89,7 +90,13 @@ function FeaturedProducts({
       const matchesCategory =
         selectedCategory === "All" || product.category === selectedCategory;
 
-      return matchesSearch && matchesCategory;
+      const numericPrice = Number(String(product.price).replace(/[₦,]/g, ""));
+
+      const matchesPrice =
+        maxPrice === null ||
+        (Number.isFinite(numericPrice) && numericPrice <= maxPrice);
+
+      return matchesSearch && matchesCategory && matchesPrice;
     })
     .sort((a, b) => {
       if (sortOption === "low") {
@@ -121,7 +128,10 @@ function FeaturedProducts({
     : filteredProducts;
 
   return (
-    <section className="bg-gray-100 py-12 sm:py-16 lg:py-20">
+    <section
+      id="all-products"
+      className="bg-gray-100 py-12 sm:py-16 lg:py-20 scroll-mt-24"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-14">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
@@ -135,6 +145,14 @@ function FeaturedProducts({
             Showing {displayedProducts.length}{" "}
             {displayedProducts.length === 1 ? "product" : "products"}
           </p>
+          {maxPrice !== null && (
+            <p className="mt-2 text-sm text-gray-600">
+              Voice price filter: products up to{" "}
+              <span className="font-semibold text-blue-600">
+                ₦{maxPrice.toLocaleString()}
+              </span>
+            </p>
+          )}
         </div>
 
         {loading ? (
