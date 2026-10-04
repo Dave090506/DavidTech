@@ -26,16 +26,6 @@ const cities = [
   "Uyo",
 ];
 
-const times = [
-  "Just now",
-  "1 minute ago",
-  "2 minutes ago",
-  "3 minutes ago",
-  "5 minutes ago",
-  "8 minutes ago",
-  "10 minutes ago",
-];
-
 const activityTypes = [
   "purchase",
   "view",
@@ -44,4 +34,27 @@ const activityTypes = [
   "bestseller",
 ];
 
-export { customerNames, cities, times, activityTypes };
+// Different messages for more natural simulated activity
+const activityMessages = {
+  purchase: [
+    "purchased this product",
+    "just bought this product",
+    "completed an order for this product",
+  ],
+
+  wishlist: [
+    "added this product to their wishlist",
+    "saved this product for later",
+  ],
+
+  view: [
+    "customers are viewing this product",
+    "customers recently viewed this product",
+  ],
+
+  trending: ["is getting more attention today", "is trending among shoppers"],
+
+  bestseller: ["is one of our popular products", "is currently a best seller"],
+};
+
+export { customerNames, cities, activityTypes, activityMessages };

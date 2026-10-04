@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FaShoppingCart,
   FaTimes,
@@ -13,8 +13,8 @@ import { supabase } from "../services/supabaseClient";
 import {
   customerNames,
   cities,
-  times,
   activityTypes,
+  activityMessages,
 } from "../data/liveActivity";
 
 const getProductImage = (product) => {
@@ -36,12 +36,25 @@ const getProductImage = (product) => {
   return matchingLocalProduct?.image || "";
 };
 
+const getRandomItem = (items) =>
+  items[Math.floor(Math.random() * items.length)];
+
+const getSimulatedTime = () => {
+  const minutes = Math.floor(Math.random() * 10);
+
+  if (minutes === 0) return "Just now";
+  if (minutes === 1) return "1 minute ago";
+
+  return `${minutes} minutes ago`;
+};
+
 function LiveActivity() {
   const [products, setProducts] = useState([]);
   const [activity, setActivity] = useState(null);
   const [visible, setVisible] = useState(true);
   const [fade, setFade] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const lastActivityRef = useRef(null);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -73,28 +86,71 @@ function LiveActivity() {
     const generateActivity = () => {
       if (products.length === 0) return;
 
-      const customer =
-        customerNames[Math.floor(Math.random() * customerNames.length)];
+      const previousActivity = lastActivityRef.current;
 
-      const city = cities[Math.floor(Math.random() * cities.length)];
+      let type = getRandomItem(activityTypes);
 
-      const product = products[Math.floor(Math.random() * products.length)];
+      // Prevent the same activity type from appearing twice in a row
+      if (activityTypes.length > 1 && type === previousActivity?.type) {
+        const otherTypes = activityTypes.filter(
+          (item) => item !== previousActivity.type,
+        );
 
-      const time = times[Math.floor(Math.random() * times.length)];
+        type = getRandomItem(otherTypes);
+      }
 
-      const type =
-        activityTypes[Math.floor(Math.random() * activityTypes.length)];
+      let productPool = products;
 
-      const viewers = Math.floor(Math.random() * 20) + 5;
+      // Best seller notifications favour highly rated products
+      if (type === "bestseller") {
+        const highlyRatedProducts = products.filter(
+          (product) => Number(product.rating || 0) >= 4.5,
+        );
 
-      setActivity({
-        customer,
-        city,
+        if (highlyRatedProducts.length > 0) {
+          productPool = highlyRatedProducts;
+        }
+      }
+
+      // Trending notifications favour well-rated products
+      if (type === "trending") {
+        const trendingProducts = products.filter(
+          (product) => Number(product.rating || 0) >= 4.0,
+        );
+
+        if (trendingProducts.length > 0) {
+          productPool = trendingProducts;
+        }
+      }
+
+      // Prevent the same product from appearing twice in a row
+      const differentProducts = productPool.filter(
+        (product) => String(product.id) !== String(previousActivity?.productId),
+      );
+
+      if (differentProducts.length > 0) {
+        productPool = differentProducts;
+      }
+
+      const product = getRandomItem(productPool);
+
+      const newActivity = {
+        customer: getRandomItem(customerNames),
+        city: getRandomItem(cities),
         product,
-        time,
         type,
-        viewers,
-      });
+        message: getRandomItem(activityMessages[type]),
+        time: getSimulatedTime(),
+        viewers: type === "view" ? Math.floor(Math.random() * 16) + 5 : null,
+      };
+
+      setActivity(newActivity);
+
+      // Remember the previous notification without causing a re-render
+      lastActivityRef.current = {
+        type,
+        productId: product.id,
+      };
 
       setVisible(true);
       setFade(false);
@@ -103,17 +159,21 @@ function LiveActivity() {
       clearTimeout(hideTimer);
       clearTimeout(removeTimer);
 
+      // Start fading after 5 seconds
       hideTimer = setTimeout(() => {
         setFade(true);
 
+        // Remove after fade animation
         removeTimer = setTimeout(() => {
           setShowNotification(false);
         }, 500);
       }, 5000);
     };
 
+    // Show the first notification
     generateActivity();
 
+    // Generate another notification every 15 seconds
     const interval = setInterval(generateActivity, 15000);
 
     return () => {
@@ -166,22 +226,13 @@ function LiveActivity() {
               `${activity.customer} from ${activity.city}`}
 
             {activity.type === "view" && `${activity.viewers} customers`}
+
             {activity.type === "trending" && "Trending Product"}
 
-            {activity.type === "bestseller" && "Best Seller"}
+            {activity.type === "bestseller" && "Popular Product"}
           </p>
 
-          <p className="text-gray-600 text-sm">
-            {activity.type === "purchase" && "purchased"}
-
-            {activity.type === "wishlist" && "added to wishlist"}
-
-            {activity.type === "view" && "are viewing this item"}
-
-            {activity.type === "trending" && "is trending today"}
-
-            {activity.type === "bestseller" && "is one of our best sellers"}
-          </p>
+          <p className="text-gray-600 text-sm">{activity.message}</p>
         </div>
       </div>
 
