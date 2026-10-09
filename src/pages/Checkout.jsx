@@ -10,17 +10,23 @@ function Checkout(props) {
   const { cart, setCart } = props;
 
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [checkoutRequestId] = useState(() => {
+    const savedId = sessionStorage.getItem("davidtech_checkout_request_id");
+
+    if (savedId) {
+      return savedId;
+    }
+
+    const newId = crypto.randomUUID();
+
+    sessionStorage.setItem("davidtech_checkout_request_id", newId);
+
+    return newId;
+  });
 
   const [shippingFee, setShippingFee] = useState(5000);
 
   const [paymentMethod, setPaymentMethod] = useState("card");
-
-  const [cardData, setCardData] = useState({
-    cardName: "",
-    cardNumber: "",
-    expiry: "",
-    cvv: "",
-  });
 
   const [formData, setFormData] = useState({
     fullName: user?.fullName || "",
@@ -66,13 +72,6 @@ function Checkout(props) {
     });
   };
 
-  const handleCardChange = (e) => {
-    setCardData({
-      ...cardData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
   const handlePlaceOrder = async () => {
     if (cart.length === 0) {
       toast.error("Your cart is empty.");
@@ -101,39 +100,52 @@ function Checkout(props) {
       return;
     }
 
-    if (paymentMethod === "card") {
-      const cleanCardNumber = cardData.cardNumber.replace(/\s/g, "");
-
-      if (
-        !cardData.cardName.trim() ||
-        !cleanCardNumber ||
-        !cardData.expiry.trim() ||
-        !cardData.cvv.trim()
-      ) {
-        toast.error("Please complete all card payment details.");
-        return;
-      }
-
-      if (!/^\d{16}$/.test(cleanCardNumber)) {
-        toast.error("Please enter a valid 16-digit card number.");
-        return;
-      }
-
-      if (!/^\d{2}\/\d{2}$/.test(cardData.expiry)) {
-        toast.error("Please enter the expiry date as MM/YY.");
-        return;
-      }
-
-      if (!/^\d{3,4}$/.test(cardData.cvv)) {
-        toast.error("Please enter a valid CVV.");
-        return;
-      }
-    }
-
-    const paymentStatus = paymentMethod === "card" ? "paid" : "pending";
-
     try {
       setPlacingOrder(true);
+
+      // PAYSTACK TEST PAYMENT
+      if (paymentMethod === "card") {
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
+
+        if (sessionError || !sessionData.session) {
+          throw new Error("Please log in again before making payment.");
+        }
+
+        const { data, error } = await supabase.functions.invoke(
+          "initialize-paystack-payment",
+          {
+            body: {
+              checkoutRequestId,
+
+              cart: cart.map((item) => ({
+                id: item.id,
+                quantity: item.quantity,
+              })),
+              billing: {
+                fullName: formData.fullName,
+                phone: formData.phone,
+                address: formData.address,
+                notes: formData.notes,
+              },
+            },
+          },
+        );
+
+        if (error) {
+          throw new Error(
+            "Unable to initialize Paystack payment. Please try again.",
+          );
+        }
+
+        if (!data?.authorizationUrl) {
+          throw new Error("Paystack did not return a payment link.");
+        }
+
+        // Keep the cart until payment has been verified.
+        window.location.assign(data.authorizationUrl);
+        return;
+      }
 
       // STEP 1: Create the main order
       const { data: order, error: orderError } = await supabase
@@ -151,7 +163,6 @@ function Checkout(props) {
           total,
           status: "pending",
           payment_method: paymentMethod,
-          payment_status: paymentStatus,
         })
         .select()
         .single();
@@ -188,7 +199,7 @@ function Checkout(props) {
 
       toast.success("Order placed successfully!");
 
-      navigate("/order-success");
+      navigate(`/order-success?orderId=${order.id}`);
     } catch (error) {
       console.error("Error placing order:", error);
 
@@ -277,7 +288,7 @@ function Checkout(props) {
                   checked={paymentMethod === "card"}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 />
-                <span>Debit / Credit Card</span>
+                <span>Pay with Paystack (Test Mode)</span>
               </label>
 
               <label className="flex items-center gap-3 border rounded-lg p-3 cursor-pointer">
@@ -304,52 +315,20 @@ function Checkout(props) {
             </div>
 
             {paymentMethod === "card" && (
-              <div className="mt-5 space-y-4 border-t pt-5">
-                <p className="text-sm text-gray-500">
-                  This is a simulated payment for demonstration purposes. No
-                  real card will be charged.
+              <div className="mt-5 border border-blue-200 bg-blue-50 rounded-xl p-4">
+                <p className="font-semibold text-blue-900 mb-2">
+                  Secure Payment with Paystack
                 </p>
 
-                <input
-                  type="text"
-                  name="cardName"
-                  placeholder="Name on Card"
-                  value={cardData.cardName}
-                  onChange={handleCardChange}
-                  className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <p className="text-sm text-gray-700">
+                  You will be redirected to Paystack's secure checkout page to
+                  complete your payment.
+                </p>
 
-                <input
-                  type="text"
-                  name="cardNumber"
-                  placeholder="Card Number"
-                  value={cardData.cardNumber}
-                  onChange={handleCardChange}
-                  maxLength="19"
-                  className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
-                />
-
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    name="expiry"
-                    placeholder="MM/YY"
-                    value={cardData.expiry}
-                    onChange={handleCardChange}
-                    maxLength="5"
-                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="password"
-                    name="cvv"
-                    placeholder="CVV"
-                    value={cardData.cvv}
-                    onChange={handleCardChange}
-                    maxLength="4"
-                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+                <p className="text-sm text-gray-600 mt-3">
+                  Test Mode is enabled. No real money will be charged. Use
+                  Paystack's official test payment details only.
+                </p>
               </div>
             )}
 

@@ -250,7 +250,7 @@ function App() {
             path="/order-success"
             element={
               <ProtectedRoute>
-                <OrderSuccess />
+                <OrderSuccess setCart={setCart} />
               </ProtectedRoute>
             }
           />

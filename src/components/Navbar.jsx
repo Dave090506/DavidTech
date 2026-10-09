@@ -195,7 +195,7 @@ function Navbar({ cart, wishlist }) {
                 duration: 0.3,
                 ease: "easeInOut",
               }}
-              className="fixed top-20 right-0 z-50 h-[calc(100vh-5rem)] w-[75%] max-w-[300px] bg-white shadow-2xl lg:hidden overflow-y-auto"
+              className="fixed top-20 right-0 z-50 h-[calc(100vh-5rem)] w-[75%] max-w-75 bg-white shadow-2xl lg:hidden overflow-y-auto"
             >
               <div className="flex flex-col p-6 gap-2">
                 <NavLink
