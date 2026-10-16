@@ -11,12 +11,6 @@ function Checkout(props) {
 
   const [placingOrder, setPlacingOrder] = useState(false);
   const [checkoutRequestId] = useState(() => {
-    const savedId = sessionStorage.getItem("davidtech_checkout_request_id");
-
-    if (savedId) {
-      return savedId;
-    }
-
     const newId = crypto.randomUUID();
 
     sessionStorage.setItem("davidtech_checkout_request_id", newId);
@@ -117,6 +111,12 @@ function Checkout(props) {
           {
             body: {
               checkoutRequestId,
+
+              checkoutEnvironment:
+                window.location.hostname === "localhost" ||
+                window.location.hostname === "127.0.0.1"
+                  ? "local"
+                  : "production",
 
               cart: cart.map((item) => ({
                 id: item.id,
