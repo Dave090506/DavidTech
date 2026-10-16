@@ -105,6 +105,7 @@ function OrderSuccess({ setCart }) {
           }
 
           sessionStorage.removeItem("davidtech_checkout_request_id");
+          sessionStorage.removeItem("davidtech_checkout_fingerprint");
         } else {
           setMessage(
             data?.message || "Your payment has not been confirmed yet.",

@@ -10,14 +10,6 @@ function Checkout(props) {
   const { cart, setCart } = props;
 
   const [placingOrder, setPlacingOrder] = useState(false);
-  const [checkoutRequestId] = useState(() => {
-    const newId = crypto.randomUUID();
-
-    sessionStorage.setItem("davidtech_checkout_request_id", newId);
-
-    return newId;
-  });
-
   const [shippingFee, setShippingFee] = useState(5000);
 
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -99,6 +91,41 @@ function Checkout(props) {
 
       // PAYSTACK TEST PAYMENT
       if (paymentMethod === "card") {
+        const currentFingerprint = JSON.stringify({
+          userId: user.id,
+          cart: cart
+            .map((item) => ({
+              id: String(item.id),
+              quantity: Number(item.quantity),
+            }))
+            .sort((a, b) => a.id.localeCompare(b.id)),
+          billing: {
+            fullName: formData.fullName.trim(),
+            phone: formData.phone.trim(),
+            address: formData.address.trim(),
+            notes: formData.notes.trim(),
+          },
+        });
+
+        const previousFingerprint = sessionStorage.getItem(
+          "davidtech_checkout_fingerprint",
+        );
+
+        const previousRequestId = sessionStorage.getItem(
+          "davidtech_checkout_request_id",
+        );
+
+        const requestId =
+          previousFingerprint === currentFingerprint && previousRequestId
+            ? previousRequestId
+            : crypto.randomUUID();
+
+        sessionStorage.setItem("davidtech_checkout_request_id", requestId);
+
+        sessionStorage.setItem(
+          "davidtech_checkout_fingerprint",
+          currentFingerprint,
+        );
         const { data: sessionData, error: sessionError } =
           await supabase.auth.getSession();
 
@@ -110,7 +137,7 @@ function Checkout(props) {
           "initialize-paystack-payment",
           {
             body: {
-              checkoutRequestId,
+              checkoutRequestId: requestId,
 
               checkoutEnvironment:
                 window.location.hostname === "localhost" ||
